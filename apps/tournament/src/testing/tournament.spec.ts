@@ -7,6 +7,13 @@ const exampleTournament = {
 } as Tournament;
 
 describe('/tournament endpoint', () => {
+
+  function getRandomTournament(): Tournament {
+    return {
+      name: 'Tournament-' + Math.floor(Math.random() * 1001)
+    } as Tournament;
+  }
+
   describe('[POST] when creating a tournament', () => {
 
     it('should return the correct id', async () => {
