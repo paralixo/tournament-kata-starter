@@ -1,10 +1,6 @@
 import { app } from '../app';
 import * as request from 'supertest';
-import { Tournament } from '../app/api/api-model';
-
-const exampleTournament = {
-  name: 'Unreal',
-} as Tournament;
+import {Participant, Tournament} from '../app/api/api-model';
 
 describe('/tournament endpoint', () => {
 
@@ -74,6 +70,62 @@ describe('/tournament endpoint', () => {
       const {body} = await request(app).get(`/api/tournaments/1234567890`).expect(404);
 
       expect(body.error).toEqual("Ce tournoi n'existe pas")
+    });
+  });
+
+  describe('/id/participants endpoint', () => {
+    describe('[POST] creating a participant', () => {
+      it('should save participant', async () => {
+        const tournament: Tournament = getRandomTournament()
+        const savedTournament = await request(app).post(`/api/tournaments`).send(tournament).expect(201);
+
+        const participant: Participant = {name: 'Jean', elo: 123}
+        const savedParticipant = await request(app).post(`/api/tournaments/${savedTournament.body.id}/participants`).send(participant).expect(201);
+
+        expect(savedParticipant.body.name).toEqual('Jean')
+      });
+
+      it('should throw an error if tournament does not exist', async () => {
+        const participant: Participant = {name: 'Jean', elo: 123}
+        const savedParticipant = await request(app).post(`/api/tournaments/4567812/participants`).send(participant).expect(404);
+
+        expect(savedParticipant.body.error).toEqual("Le tournoi n'existe pas");
+      });
+
+      it('should not save another participant with the same name', async () => {
+        const tournament: Tournament = getRandomTournament()
+        const savedTournament = await request(app).post(`/api/tournaments`).send(tournament).expect(201);
+
+        const participant: Participant = {name: 'Jean', elo: 123}
+        const savedParticipant = await request(app).post(`/api/tournaments/${savedTournament.body.id}/participants`).send(participant).expect(201);
+
+        const second_participant: Participant = {name: 'Jean', elo: 123}
+        const saved_secondParticipant = await request(app).post(`/api/tournaments/${savedTournament.body.id}/participants`).send(second_participant).expect(400);
+
+        expect(saved_secondParticipant.body.error).toEqual('Le participant existe déjà');
+      });
+
+      it('should have a not empty participant name' , async () => {
+        const tournament: Tournament = getRandomTournament()
+        const savedTournament = await request(app).post(`/api/tournaments`).send(tournament).expect(201);
+
+        const participant: Participant = {name: '', elo: 123}
+        const savedParticipant = await request(app).post(`/api/tournaments/${savedTournament.body.id}/participants`).send(participant).expect(400);
+
+        expect(savedParticipant.body.error).toEqual('Le nom ne peut pas être vide')
+      });
+
+      it('should have a not empty participant elo' , async () => {
+        const tournament: Tournament = getRandomTournament()
+        const savedTournament = await request(app).post(`/api/tournaments`).send(tournament).expect(201);
+
+        const participant: Participant = {name: 'Jean', elo: 12.03}
+        const savedParticipant = await request(app).post(`/api/tournaments/${savedTournament.body.id}/participants`).send(participant).expect(400);
+
+        expect(savedParticipant.body.error).toEqual('elo doit être un nombre entier')
+      });
+
+
     });
   });
 });
