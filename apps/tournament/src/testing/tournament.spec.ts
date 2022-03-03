@@ -1,6 +1,6 @@
 import { app } from '../app';
 import * as request from 'supertest';
-import { Tournament, TournamentPhaseType } from '../app/api/api-model';
+import { Tournament } from '../app/api/api-model';
 
 const exampleTournament = {
   name: 'Unreal',
@@ -8,18 +8,47 @@ const exampleTournament = {
 
 describe('/tournament endpoint', () => {
   describe('[POST] when creating a tournament', () => {
+
     it('should return the correct id', async () => {
-      const { body } = await request(app).post('/api/tournaments').send(exampleTournament).expect(201);
+      const tournament: Tournament = getRandomTournament()
+      const { body } = await request(app).post('/api/tournaments').send(tournament).expect(201);
 
       expect(body.id).not.toBeUndefined();
     });
 
     it('should have stored the tournament', async () => {
-      const { body } = await request(app).post('/api/tournaments').send(exampleTournament).expect(201);
+      const tournament: Tournament = getRandomTournament()
+      const { body } = await request(app).post('/api/tournaments').send(tournament).expect(201);
 
       const get = await request(app).get(`/api/tournaments/${body.id}`).expect(200);
 
-      expect(get.body.name).toEqual(exampleTournament.name);
+      expect(get.body.name).toEqual(tournament.name);
+      expect(get.body.id).not.toBeUndefined();
+    });
+
+    it('should have a filled tournament name', async () => {
+      const { body } = await request(app).post('/api/tournaments').send({name: ''} as Tournament).expect(400);
+
+      expect(body.error).toEqual('Le champ nom est manquant ou vide.');
+      expect(body.id).toBeUndefined();
+    });
+
+    it('should have a tournament name', async () => {
+      const { body } = await request(app).post('/api/tournaments').send({} as Tournament).expect(400);
+
+      expect(body.error).toEqual('Le champ nom est manquant ou vide.');
+      expect(body.id).toBeUndefined();
+    });
+
+    it('should have a unique name', async () => {
+      const tournament: Tournament = getRandomTournament()
+      const validTournament = await request(app).post('/api/tournaments').send(tournament).expect(201);
+
+      const invalidTournament = await request(app).post('/api/tournaments').send(tournament).expect(400);
+
+      expect(invalidTournament.body.error).toEqual('Le nom est déjà pris.');
+      expect(invalidTournament.body.id).toBeUndefined();
+      expect(validTournament.body.id).not.toBeUndefined();
     });
   });
 });

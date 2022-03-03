@@ -10,4 +10,9 @@ export class TournamentRepository {
   public getTournament(tournamentId: string): Tournament {
     return this.tournaments.get(tournamentId);
   }
+
+  public getTournamentByName(name: string): Tournament {
+    const tournament: Tournament = [...this.tournaments.values()].find((item: Tournament) => item.name === name);
+    return tournament;
+  }
 }
