@@ -51,4 +51,22 @@ describe('/tournament endpoint', () => {
       expect(validTournament.body.id).not.toBeUndefined();
     });
   });
+
+  describe('[GET] when getting a tournament', () => {
+    it('should be an existing tournament', async () => {
+      const tournament: Tournament = getRandomTournament()
+      const savedTournament = await request(app).post(`/api/tournaments`).send(tournament).expect(201);
+
+      const fetchedTournament = await request(app).get(`/api/tournaments/${savedTournament.body.id}`).expect(200);
+
+      expect(fetchedTournament.body.id).toEqual(savedTournament.body.id)
+      expect(fetchedTournament.body.name).toEqual(tournament.name)
+    });
+
+    it('should return 404 error if tournament doesn\'t exists', async () => {
+      const {body} = await request(app).get(`/api/tournaments/1234567890`).expect(404);
+
+      expect(body.error).toEqual("Ce tournoi n'existe pas")
+    });
+  });
 });
