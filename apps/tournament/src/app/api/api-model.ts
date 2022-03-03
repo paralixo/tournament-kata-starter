@@ -8,6 +8,12 @@ export interface TournamentPhase {
 }
 
 export interface Participant {
+  id: string;
+  name: string;
+  elo: number;
+}
+
+export interface ParticipantToAdd {
   name: string;
   elo: number;
 }

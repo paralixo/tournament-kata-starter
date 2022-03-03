@@ -39,7 +39,7 @@ export const getTournament = (req: Request, res: Response) => {
 
 export const postParticipant = (req: Request, res: Response) => {
   const id = req.params['id'];
-  const participant:Participant = req.body;
+  const participant:Participant = {id: uuidv4(), ...req.body};
 
   if(!participant.name || participant.name == ''){
     res.status(400)
@@ -70,5 +70,18 @@ export const postParticipant = (req: Request, res: Response) => {
   tournamentRepository.saveTournament(tournament);
 
   res.status(201);
-  res.send({ name: participant.name });
+  res.send({ id: participant.id });
+};
+
+export const getParticipant = (req: Request, res: Response) => {
+  const id = req.params['id'];
+
+  const tournament = tournamentRepository.getTournament(id);
+  if (tournament == null) {
+    res.status(404)
+    res.send({error: "Le tournoi n'existe pas"})
+  }
+
+  res.status(200);
+  res.send(tournament.participants)
 };

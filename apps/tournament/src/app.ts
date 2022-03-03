@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { getTournament, postTournament, postParticipant } from './app/api/tournament-api';
+import { getTournament, postTournament, postParticipant, getParticipant } from './app/api/tournament-api';
 import * as bodyParser from 'body-parser';
 
 export const app = express();
@@ -13,3 +13,4 @@ app.get('/api', (req, res) => {
 app.post('/api/tournaments', postTournament);
 app.get('/api/tournaments/:id', getTournament);
 app.post('/api/tournaments/:id/participants', postParticipant);
+app.get('/api/tournaments/:id/participants', getParticipant);
