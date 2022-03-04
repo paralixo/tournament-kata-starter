@@ -1,18 +1,24 @@
-import { Tournament } from '../api/api-model';
+import {Tournament} from "../api/models/models";
+import {ITournament} from "../api/models/interfaces";
+import { v4 as uuidv4 } from 'uuid';
 
 export class TournamentRepository {
-  private tournaments = new Map<string, Tournament>();
 
-  public saveTournament(tournament: Tournament): void {
-    this.tournaments.set(tournament.id, tournament);
+  public async saveTournament(tournament: ITournament): Promise<void> {
+    const newtournament = new Tournament()
+    newtournament.id = uuidv4()
+    newtournament.name = tournament.name
+    newtournament.participants = []
+    newtournament.phases = []
+    await newtournament.save()
   }
 
-  public getTournament(tournamentId: string): Tournament {
-    return this.tournaments.get(tournamentId);
+  public async getTournament(tournamentId: string): Promise<ITournament>{
+    return await Tournament.findOne({id: tournamentId}).exec()
   }
 
-  public getTournamentByName(name: string): Tournament {
-    const tournament: Tournament = [...this.tournaments.values()].find((item: Tournament) => item.name === name);
-    return tournament;
+  public async doesTournamentAlreadyExists(name: string): Promise<boolean> {
+    const tournaments = await Tournament.find({})
+    return tournaments.some((item: ITournament) => item.name === name);
   }
 }

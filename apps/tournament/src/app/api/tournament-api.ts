@@ -5,37 +5,42 @@ import { v4 as uuidv4 } from 'uuid';
 
 const tournamentRepository = new TournamentRepository();
 
-export const postTournament = (req: Request, res: Response) => {
+const respond = (res: Response, code: number, body: any) => {
+  res.status(code)
+  res.send(body)
+}
+
+export const postTournament = async (req: Request, res: Response) => {
   const tournamentToAdd: TournamentToAdd = req.body;
 
-  if (!tournamentToAdd.name || tournamentToAdd.name == '') {
+  if (!tournamentToAdd.name) {
     respond(res, 400, {error: 'Le champ nom est manquant ou vide.'})
   }
-  if (tournamentRepository.getTournamentByName(tournamentToAdd.name)) {
+  if (await tournamentRepository.doesTournamentAlreadyExists(tournamentToAdd.name)) {
     respond(res, 400, {error: 'Le nom est déjà pris.'})
   }
 
   const tournament = { id: uuidv4(), name: tournamentToAdd.name, phases: [], participants: [] };
-  tournamentRepository.saveTournament(tournament);
+  await tournamentRepository.saveTournament(tournament);
   respond(res, 201, {id: tournament.id})
 };
 
-export const getTournament = (req: Request, res: Response) => {
-  const id = req.params['id'];
+export const getTournament = async (req: Request, res: Response) => {
+  const id:string = req.params['id'];
 
-  const tournament = tournamentRepository.getTournament(id);
-  if (tournament == null) {
+  const tournament = await tournamentRepository.getTournament(id);
+  if (tournament === undefined) {
     respond(res, 404, {error: "Ce tournoi n'existe pas"})
   }
 
   respond(res, 200, tournament)
 };
 
-export const postParticipant = (req: Request, res: Response) => {
-  const id = req.params['id'];
+export const postParticipant = async (req: Request, res: Response) => {
+  const id:string = req.params['id'];
   const participant:Participant = {id: uuidv4(), ...req.body};
 
-  if(!participant.name || participant.name == ''){
+  if(!participant.name){
     respond(res, 400, {error: "Le nom ne peut pas être vide"})
   }
 
@@ -43,12 +48,12 @@ export const postParticipant = (req: Request, res: Response) => {
     respond(res, 400, {error: "elo doit être un nombre entier"})
   }
 
-  const tournament = tournamentRepository.getTournament(id);
-  if (tournament == null){
+  const tournament = await tournamentRepository.getTournament(id);
+  if (tournament === undefined){
     respond(res, 404, {error: "Le tournoi n'existe pas"})
   }
 
-  const participantAlreadyExists = tournament.participants.find(p => p.name == participant.name) != undefined
+  const participantAlreadyExists = tournament.participants.some(p => p.name == participant.name)
 
   if(participantAlreadyExists){
     respond(res, 400, {error: "Le participant existe déjà"})
@@ -57,23 +62,20 @@ export const postParticipant = (req: Request, res: Response) => {
   const participants:Participant[] = tournament.participants
   participants.push(participant)
 
-  tournamentRepository.saveTournament(tournament);
+  await tournamentRepository.saveTournament(tournament);
 
   respond(res, 201, {id: participant.id})
 };
 
-export const getParticipant = (req: Request, res: Response) => {
-  const id = req.params['id'];
+export const getParticipant = async (req: Request, res: Response) => {
+  const id:string = req.params['id'];
 
-  const tournament = tournamentRepository.getTournament(id);
-  if (tournament == null) {
+  const tournament = await tournamentRepository.getTournament(id);
+  if (tournament === undefined) {
     respond(res, 404, {error: "Le tournoi n'existe pas"})
   }
 
   respond(res, 200, tournament.participants)
 };
 
-const respond = (res: Response, code: number, body: any) => {
-  res.status(code)
-  res.send(body)
-}
+

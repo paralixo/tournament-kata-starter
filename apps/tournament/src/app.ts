@@ -1,8 +1,14 @@
 import * as express from 'express';
-import { getTournament, postTournament, postParticipant, getParticipant } from './app/api/tournament-api';
+import {
+  getTournament,
+  postTournament,
+  postParticipant,
+  getParticipant
+} from './app/api/tournament-api';
 import * as bodyParser from 'body-parser';
 
 export const app = express();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
