@@ -1,9 +1,15 @@
 import { app } from '../app';
 import * as request from 'supertest';
-import {Participant, ParticipantToAdd, Tournament} from '../app/api/api-model';
+import {ParticipantToAdd, Tournament} from '../app/api/api-model';
+import { v4 as uuidv4 } from 'uuid';
+import {initDatabaseConnection} from "../app/db";
 
 describe('/tournament endpoint', () => {
   const apiPrefix = '/api/tournaments';
+
+  beforeAll(() => {
+    initDatabaseConnection()
+  })
 
   describe('[POST] when creating a tournament', () => {
 
@@ -157,7 +163,7 @@ describe('/tournament endpoint', () => {
 
   function getRandomTournament(): Tournament {
   return {
-      name: 'Tournament-' + Math.floor(Math.random() * 1001)
+      name: 'Tournament-' + uuidv4()
     } as Tournament;
   }
 });

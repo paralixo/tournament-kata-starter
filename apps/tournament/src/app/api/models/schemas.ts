@@ -11,6 +11,7 @@ export const participantSchema = new Schema<IParticipant>({
   elo: { type: Number, required: true }
 });
 
+// On décide de garder l'id en plus de l'_id pour être compatible avec d'autres bases de données au besoin
 export const tournamentSchema = new Schema<ITournament>({
   id: {type: String, required: true},
   name: {type: String, required: true},
