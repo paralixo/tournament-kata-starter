@@ -7,7 +7,11 @@ export interface TournamentPhase {
   type: TournamentPhaseType;
 }
 
-export interface Participant {
+export interface Participant extends ParticipantToAdd {
+  id: string;
+}
+
+export interface ParticipantToAdd {
   name: string;
   elo: number;
 }
@@ -16,9 +20,8 @@ export interface TournamentToAdd {
   name: string;
 }
 
-export interface Tournament {
+export interface Tournament extends TournamentToAdd {
   id: string;
-  name: string;
 
   phases: TournamentPhase[];
   participants: Participant[];
